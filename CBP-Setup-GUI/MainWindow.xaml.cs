@@ -28,7 +28,16 @@ namespace CBPSetupGUI
             DefaultChecker();
         }
 
-        private static int Location = 0;
+        enum LocationType
+        {
+            Unknown,
+            RoN,
+            WorkshopStable,
+            LocalMods,
+            WorkshopPreRelease
+        }
+
+        private static LocationType Location = LocationType.Unknown;
         // 0 = unknown
         // 1 = RoN root folder
         // 2 = Workshop mods folder (where we expect it to be the first time)
@@ -250,25 +259,25 @@ namespace CBPSetupGUI
                 if (File.Exists(Path.GetFullPath(Path.Combine(CBPSFolder, "riseofnations.exe"))))
                 {
                     //RoN root folder
-                    Location = 1;
+                    Location = LocationType.RoN;
                 }
 
                 if (Path.GetFullPath(Path.Combine(CBPSFolder, @"..\", "2287791153")) == CBPSFolder)
                 {
                     //workshop mods folder
-                    Location = 2;
+                    Location = LocationType.WorkshopStable;
                 }
 
                 if (File.Exists(Path.GetFullPath(Path.Combine(CBPSFolder, @"..\", "mod-status.txt"))))
                 {
                     //local mods folder
-                    Location = 3;
+                    Location = LocationType.LocalMods;
                 }
 
                 if (Path.GetFullPath(Path.Combine(CBPSFolder, @"..\", "2528425253")) == CBPSFolder)
                 {
                     //workshop mods folder, but pre-release
-                    Location = 4;
+                    Location = LocationType.WorkshopPreRelease;
                 }
             }
 
@@ -280,13 +289,13 @@ namespace CBPSetupGUI
                 // pretty sure this isn't a particularly efficient way of doing this, but it shouldn't really matter
                 switch (Location)
                 {
-                    case 0: // 0 = unknown
+                    case LocationType.Unknown: // 0 = unknown
 
                         MessageBox.Show(CBPSetupGUI.Language.Resources.LocationCase0);
                         await DelayedClose(CBPSetupGUI.Language.Resources.LocationCase0 + "\n" + CBPSetupGUI.Language.Resources.WindowWillClose, 3);
                         break;
 
-                    case 1: // 1 = RoN root folder
+                    case LocationType.RoN: // 1 = RoN root folder
 
                         PrimaryLog.Text += "\n" + CBPSetupGUI.Language.Resources.LocationCase1;
 
@@ -363,7 +372,8 @@ namespace CBPSetupGUI
                         }
                         break;
 
-                    case int _ when (Location == 2 || Location == 4)://parens just for my sake
+                    case LocationType.WorkshopStable:
+                    case LocationType.WorkshopPreRelease://parens just for my sake
                         // 2 = Workshop mods folder (where we expect it to be the first time); 4 is pre-release
                         try
                         {
@@ -384,12 +394,12 @@ namespace CBPSetupGUI
                         }
                         await SlowDown();
 
-                        if (Location == 2)
+                        if (Location == LocationType.WorkshopStable)
                         {
                             PrimaryLog.Text += "\n" + CBPSetupGUI.Language.Resources.LocationCase2;
                         }
 
-                        if (Location == 4)
+                        if (Location == LocationType.WorkshopPreRelease)
                         {
                             PrimaryLog.Text += "\n" + CBPSetupGUI.Language.Resources.LocationCase4;
                         }
@@ -407,7 +417,7 @@ namespace CBPSetupGUI
                         }
                         break;
 
-                    case 3: // 3 = local mods folder
+                    case LocationType.LocalMods: // 3 = local mods folder
 
                         PrimaryLog.Text += "\n" + CBPSetupGUI.Language.Resources.LocationCase3;
 
